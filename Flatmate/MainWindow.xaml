@@ -12,11 +12,29 @@
             <RowDefinition Height="315*"/>
             <RowDefinition Height="99*"/>
         </Grid.RowDefinitions>
-        <TextBox x:Name="TxtLog" Grid.Row="2" TextWrapping="Wrap" Margin="5" IsReadOnly="True" AcceptsReturn="True" FontSize="14"/>
-        <DataGrid x:Name="DgExcelSheet" Grid.Row="1" Margin="5" FontSize="14"/>
-        <Button x:Name="BtnLoadExcel" Content="Load Excel" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="130" Height="35" FontSize="14" Click="BtnLoadExcel_Click"/>
-        <Button x:Name="BtnStartWork" Content="Start" HorizontalAlignment="Left" Margin="145,10,0,0" VerticalAlignment="Top" Width="130" Height="35" FontSize="14" Click="BtnStartWork_Click"/>
-        <Button x:Name="BtnStopWork" Content="Stop" HorizontalAlignment="Left" Margin="280,10,0,0" VerticalAlignment="Top" Width="130" Height="35" FontSize="14" Click="BtnStopWork_Click"/>
+        <TextBox x:Name="TxtLog" Grid.Row="2" TextWrapping="Wrap" Margin="5" IsReadOnly="True" AcceptsReturn="True" FontSize="14" VerticalScrollBarVisibility="Auto" d:IsLocked="True"/>
+        <Button x:Name="BtnLoadExcel" Content="Load Excel" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="130" Height="35" FontSize="14" Click="BtnLoadExcel_Click" d:IsLocked="True"/>
+        <Button x:Name="BtnStartWork" Content="Start" HorizontalAlignment="Left" Margin="145,10,0,0" VerticalAlignment="Top" Width="130" Height="35" FontSize="14" Click="BtnStartWork_Click" d:IsLocked="True"/>
+        <Button x:Name="BtnStopWork" Content="Stop" HorizontalAlignment="Left" Margin="280,10,0,0" VerticalAlignment="Top" Width="130" Height="35" FontSize="14" Click="BtnStopWork_Click" d:IsLocked="True"/>
+        <TabControl Grid.Row="1" Margin="5" FontSize="14">
+            <TabItem Header="Excel Sheet" d:IsLocked="True">
+                <Grid>
+                    <DataGrid x:Name="DgExcelSheet" Grid.Row="1" Margin="5" FontSize="14" d:IsLocked="True"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="SubUrbs">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="46*"/>
+                        <RowDefinition Height="231*"/>
+                    </Grid.RowDefinitions>
+                    <DataGrid x:Name="DgSuburbs" Grid.Row="1" MinColumnWidth="100"/>
+                    <Label Content="Suburbs:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="26"/>
+                    <ComboBox x:Name="CmbSuburbs" HorizontalAlignment="Left" Margin="79,10,0,0" VerticalAlignment="Top" Width="170" Height="30"/>
+                    <Button x:Name="BtnFilter" Content="Filter" HorizontalAlignment="Left" Margin="254,10,0,0" VerticalAlignment="Top" Width="130" Height="30" Click="BtnFilter_Click"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
 
     </Grid>
 </Window>

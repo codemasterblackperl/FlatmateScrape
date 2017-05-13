@@ -28,12 +28,13 @@ namespace Flatmate
         }
 
         private FastCollection<ExcelDisplay> _fcSuburbs;
+        private FastCollection<Flat> _fcFlats;
 
         private bool _isProcessing;
         private string _excelFile;
 
         
-        private void BtnLoadExcel_Click(object sender, RoutedEventArgs e)
+        async private void BtnLoadExcel_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new Microsoft.Win32.OpenFileDialog();
             dlg.DefaultExt = "*.xlsx";
@@ -42,7 +43,8 @@ namespace Flatmate
             if (dlgRes == false)
                 return;
             _excelFile = dlg.FileName;
-            LoadExcelSheet();
+            _fcSuburbs.Clear();
+            await LoadExcelSheet();
         }
 
         private void BtnStartWork_Click(object sender, RoutedEventArgs e)
@@ -55,7 +57,7 @@ namespace Flatmate
 
             _isProcessing = true;
             BtnStopWork.IsEnabled = true;
-
+            BtnFilter.IsEnabled = false;
             
         }
 
@@ -70,12 +72,48 @@ namespace Flatmate
             Init();
         }
 
+        private void BtnFilter_Click(object sender, RoutedEventArgs e)
+        {
+            if(CmbSuburbs.SelectedIndex==0)
+                DgSuburbs.ItemsSource = _fcFlats;
+            else
+            {
+                var list = _fcFlats.Where(x => x.SubUrb == CmbSuburbs.Text).ToList();
+                DgSuburbs.ItemsSource = list;
+            }
+            DgSuburbs.Items.Refresh();
+        }
+
         async private void Init()
         {
             _fcSuburbs = new FastCollection<ExcelDisplay>();
+            
             DgExcelSheet.IsReadOnly = true;
             DgExcelSheet.ItemsSource = _fcSuburbs;
-            DgExcelSheet.MinColumnWidth = 50;
+            DgExcelSheet.MinColumnWidth = 100;
+
+            _fcFlats = new FastCollection<Flat>();
+
+            DgSuburbs.AutoGenerateColumns = false;
+            var tc1 = new DataGridTextColumn
+            {
+                Header="Name",
+                Width=300,
+                Binding=new Binding("Name")
+            };
+            var tc2 = new DataGridTextColumn
+            {
+                Header = "Price",
+                Binding = new Binding("Price")
+            };
+
+            DgSuburbs.Columns.Add(tc1);
+            DgSuburbs.Columns.Add(tc2);
+
+            DgSuburbs.IsReadOnly = true;
+
+            DgSuburbs.ItemsSource = _fcFlats;
+            
             _isProcessing = false;
             BtnStopWork.IsEnabled = _isProcessing;
         }
@@ -91,23 +129,34 @@ namespace Flatmate
             TxtLog.ScrollToEnd();
         }
 
-        async private void LoadExcelSheet()
+        async private Task LoadExcelSheet()
         {
             try
             {
+                CmbSuburbs.Items.Clear();
+                CmbSuburbs.Items.Add("All");
+
                 using (ExcelPackage ep = new ExcelPackage(new FileInfo(_excelFile)))
                 {
                     var suburbsSheet = ep.Workbook.Worksheets["SuburbList"];
                     var rowCount = suburbsSheet.Dimension.End.Row;
 
-                    for(int i = 0; i < rowCount; i++)
+                    for (int i = 2; i < rowCount - 1; i++)
                     {
+                        if (suburbsSheet.Cells[i, 1].Value == null)
+                            break;
+                        var suburb = suburbsSheet.Cells[i, 1].Value.ToString();
+                        if (suburbsSheet.Cells[i, 2].Value == null)
+                            break;
+                        var state = suburbsSheet.Cells[i, 2].Value.ToString();
+
                         var excelDisp = new ExcelDisplay
                         {
-                            SubUrb = suburbsSheet.Cells[i, 0].Value.ToString(),
-                            State=suburbsSheet.Cells[i,1].Value.ToString()
+                            SubUrb = suburb,
+                            State = state
                         };
                         _fcSuburbs.Add(excelDisp);
+                        CmbSuburbs.Items.Add(suburb);
                     }
                 }
             }
@@ -115,7 +164,13 @@ namespace Flatmate
             {
                 MessageBox.Show(ex.Message, "Error");
             }
+
+            UpdateLog("Total "+_fcSuburbs.Count.ToString()+" suburbs are loaded");
+
+            _fcFlats.Clear();
+            CmbSuburbs.SelectedIndex = 0;
         }
 
+        
     }
 }
