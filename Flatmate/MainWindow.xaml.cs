@@ -47,17 +47,19 @@ namespace Flatmate
             await LoadExcelSheet();
         }
 
-        private void BtnStartWork_Click(object sender, RoutedEventArgs e)
+        async private void BtnStartWork_Click(object sender, RoutedEventArgs e)
         {
-            if (_fcSuburbs.Count == 0)
-            {
-                MessageBox.Show("Please load excel sheet before starting process", "Info");
-                return;
-            }
+            //if (_fcSuburbs.Count == 0)
+            //{
+            //    MessageBox.Show("Please load excel sheet before starting process", "Info");
+            //    return;
+            //}
 
-            _isProcessing = true;
-            BtnStopWork.IsEnabled = true;
-            BtnFilter.IsEnabled = false;
+            //_isProcessing = true;
+            //BtnStopWork.IsEnabled = true;
+            //BtnFilter.IsEnabled = false;
+
+            await StartProcess();
             
         }
 
@@ -170,6 +172,17 @@ namespace Flatmate
             _fcFlats.Clear();
             CmbSuburbs.SelectedIndex = 0;
         }
+
+
+        async private Task StartProcess()
+        {
+            Search search = new Search();
+            //await search.DownloadWebPage("");
+            //var html = File.ReadAllText(@"c:\temp\f.htm");
+            //var token = search.GetToken(html);
+        }
+
+
 
         
     }
