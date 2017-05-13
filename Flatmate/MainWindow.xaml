@@ -5,8 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Flatmate"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="Flatmate Scraper v1.0" Height="500" Width="750" WindowStartupLocation="CenterScreen" Loaded="Window_Loaded">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="55*"/>
+            <RowDefinition Height="315*"/>
+            <RowDefinition Height="99*"/>
+        </Grid.RowDefinitions>
+        <TextBox x:Name="TxtLog" Grid.Row="2" TextWrapping="Wrap" Margin="5" IsReadOnly="True" AcceptsReturn="True" FontSize="14"/>
+        <DataGrid x:Name="DgExcelSheet" Grid.Row="1" Margin="5" FontSize="14"/>
+        <Button x:Name="BtnLoadExcel" Content="Load Excel" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="130" Height="35" FontSize="14" Click="BtnLoadExcel_Click"/>
+        <Button x:Name="BtnStartWork" Content="Start" HorizontalAlignment="Left" Margin="145,10,0,0" VerticalAlignment="Top" Width="130" Height="35" FontSize="14" Click="BtnStartWork_Click"/>
+        <Button x:Name="BtnStopWork" Content="Stop" HorizontalAlignment="Left" Margin="280,10,0,0" VerticalAlignment="Top" Width="130" Height="35" FontSize="14" Click="BtnStopWork_Click"/>
+
     </Grid>
 </Window>
