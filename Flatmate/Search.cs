@@ -16,18 +16,31 @@ namespace Flatmate
 
         private HttpHelper _client;
 
+        private int _pageCount;
+
         public Search()
         {
             _client = new HttpHelper();
             _client.InitHttpClient(true,_userAgent,"flatmates.com.au", "https://flatmates.com.au/");
+            _pageCount = 0;
         }
 
-        async public Task DownloadWebPage(string keyword)
+        async public Task<string> SearchFlat(string suburb,string state)
         {
             var html = await _client.GetAsync(_url);
-            File.WriteAllText(@"c:\temp\f.htm", html);
+            File.WriteAllText(@"c:\temp\f"+_pageCount+".htm", html);
+            _pageCount++;
 
             var authToken = GetToken(html);
+            var keyword = suburb + "-" + state;
+            var queery = BuildRoomSearchQuerry(keyword, authToken);
+
+            html = await _client.PostAsync("https://flatmates.com.au/searches", queery);
+
+            File.WriteAllText(@"c:\temp\f" + _pageCount + ".htm", html);
+            _pageCount++;
+
+            return html;
         }
 
         public string GetToken(string html)
@@ -51,7 +64,7 @@ namespace Flatmate
         }
 
 
-        private string GetRoomSearch(string keyword,string authToken)
+        private System.Net.Http.FormUrlEncodedContent BuildRoomSearchQuerry(string keyword,string authToken)
         {
 
             //authenticity_token = IZlOXRusFSIipRhoZM6pE1a96Cuk644m6fMF0mHSRkfQgqLL4Ep1RKjvHf % 2BuSCByDfs2XgM94NhrNBQZHgUgtA % 3D % 3D 
@@ -61,9 +74,59 @@ namespace Flatmate
             //&search % 5Bmax_budget % 5D = 
             //&search % 5Bsort % 5D = photos
 
-            var token = HtmlEntity.Entitize(authToken);
-            string postString = "authenticity_token=" + token;
-            return postString;
+            var querry = new System.Net.Http.FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("authenticity_token",authToken),
+                new KeyValuePair<string, string>("search[locations][]",keyword),
+                new KeyValuePair<string, string>("search[mode]","rooms"),
+                new KeyValuePair<string, string>("search[min_budget]",""),
+                new KeyValuePair<string, string>("search[max_budget]",""),
+                new KeyValuePair<string, string>("search[sort]","photos")
+            });
+
+            //var keys = new KeyValuePair<string, string>();
+            //keys.ad
+
+            //var token = HtmlEntity.Entitize(authToken);
+            //string postString = "authenticity_token=" + token;
+            //postString += "&search%5Blocations%5D%5B%5D=" + keyword;
+            //postString += "&search%5Bmode%5D=rooms&search%5Bmin_budget%5D=&search%5Bmax_budget%5D=&search%5Bsort%5D=photos";
+            //return postString;
+
+            return querry;
+        }
+
+        public List<Flat> GetFlatDetails(string html,string suburb)
+        {
+            var list = new List<Flat>();
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+
+            var nodes = doc.DocumentNode.SelectNodes("//div[@class='content-column']");
+
+            if (nodes == null || nodes.Count == 0)
+                throw new Exception("No result found");
+
+            foreach(var node in nodes)
+            {
+                var pnode = node.SelectSingleNode("./div/a[@class='hero']/div");
+                var price = pnode.InnerText.Trim();
+
+                var nnode = node.SelectSingleNode("./div/h2");
+                var name = nnode.InnerText.Trim();
+
+                list.Add(new Flat
+                {
+                    Price=price,
+                    Name=name,
+                    SubUrb=suburb,
+                    RoomOrFlatmate="Room"
+                });
+
+            }
+
+            return list;
         }
     }
 }

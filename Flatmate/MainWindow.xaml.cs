@@ -49,17 +49,17 @@ namespace Flatmate
 
         async private void BtnStartWork_Click(object sender, RoutedEventArgs e)
         {
-            //if (_fcSuburbs.Count == 0)
-            //{
-            //    MessageBox.Show("Please load excel sheet before starting process", "Info");
-            //    return;
-            //}
+            if (_fcSuburbs.Count == 0)
+            {
+                MessageBox.Show("Please load excel sheet before starting process", "Info");
+                return;
+            }
 
-            //_isProcessing = true;
-            //BtnStopWork.IsEnabled = true;
-            //BtnFilter.IsEnabled = false;
+            UpdateUi(true);
 
             await StartProcess();
+
+            UpdateUi(false);
             
         }
 
@@ -120,6 +120,17 @@ namespace Flatmate
             BtnStopWork.IsEnabled = _isProcessing;
         }
 
+        private void UpdateUi(bool processing)
+        {
+            _isProcessing = processing;
+            BtnStartWork.IsEnabled = !processing;
+            BtnStopWork.IsEnabled = processing;
+            BtnFilter.IsEnabled = !processing;
+            BtnLoadExcel.IsEnabled = !processing;
+            CmbSuburbs.IsEnabled = !processing;
+            Cursor =processing==true? Cursors.Wait:Cursors.Arrow;
+        }
+
         private void UpdateLog(string text)
         {
             var message = "[ " + DateTime.Now.ToString() + " ]:  " + text+"\r\n";
@@ -143,14 +154,14 @@ namespace Flatmate
                     var suburbsSheet = ep.Workbook.Worksheets["SuburbList"];
                     var rowCount = suburbsSheet.Dimension.End.Row;
 
-                    for (int i = 2; i < rowCount - 1; i++)
+                    for (int i = 0; i < rowCount-1; i++)
                     {
-                        if (suburbsSheet.Cells[i, 1].Value == null)
+                        if (suburbsSheet.Cells[i+2, 1].Value == null)
                             break;
-                        var suburb = suburbsSheet.Cells[i, 1].Value.ToString();
-                        if (suburbsSheet.Cells[i, 2].Value == null)
+                        var suburb = suburbsSheet.Cells[i+2, 1].Value.ToString();
+                        if (suburbsSheet.Cells[i+2, 2].Value == null)
                             break;
-                        var state = suburbsSheet.Cells[i, 2].Value.ToString();
+                        var state = suburbsSheet.Cells[i+2, 2].Value.ToString();
 
                         var excelDisp = new ExcelDisplay
                         {
@@ -177,6 +188,32 @@ namespace Flatmate
         async private Task StartProcess()
         {
             Search search = new Search();
+            //UpdateLog("Search started");
+            foreach(var sub in _fcSuburbs)
+            {
+                
+                UpdateLog("Searching " + sub.SubUrb);
+                try
+                {
+                    UpdateLog("Getting webpage");
+                    var html =await search.SearchFlat(sub.SubUrb, sub.State);
+                    UpdateLog("Webpage successfully received");
+                    UpdateLog("Getting flat details from the webpage");
+                    var list = search.GetFlatDetails(html, sub.SubUrb);
+                    UpdateLog(list.Count + " flat details found");
+                    _fcFlats.AddRange(list);
+                }
+                catch(Exception ex)
+                {
+                    UpdateLog("Error: " + ex.Message);
+                }
+                UpdateLog("Search complete");
+
+                if (_isProcessing == false)
+                    break;
+
+                await Task.Delay(5000);
+            }
             //await search.DownloadWebPage("");
             //var html = File.ReadAllText(@"c:\temp\f.htm");
             //var token = search.GetToken(html);
