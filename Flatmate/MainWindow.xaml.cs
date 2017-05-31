@@ -36,15 +36,15 @@ namespace Flatmate
         
         async private void BtnLoadExcel_Click(object sender, RoutedEventArgs e)
         {
-            var dlg = new Microsoft.Win32.OpenFileDialog();
-            dlg.DefaultExt = "*.xlsx";
-            dlg.Multiselect = false;
-            var dlgRes = dlg.ShowDialog();
-            if (dlgRes == false)
-                return;
-            _excelFile = dlg.FileName;
-            _fcSuburbs.Clear();
-            await LoadExcelSheet();
+            //var dlg = new Microsoft.Win32.OpenFileDialog();
+            //dlg.DefaultExt = "*.xlsx";
+            //dlg.Multiselect = false;
+            //var dlgRes = dlg.ShowDialog();
+            //if (dlgRes == false)
+            //    return;
+            //_excelFile = dlg.FileName;
+            //_fcSuburbs.Clear();
+            //await LoadExcelSheet();
         }
 
          async private void BtnStartWork_Click(object sender, RoutedEventArgs e)
