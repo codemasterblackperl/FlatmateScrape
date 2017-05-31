@@ -81,10 +81,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="EmailAddressInput.xaml.cs">
+      <DependentUpon>EmailAddressInput.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GSheet.cs" />
     <Compile Include="HttpHelper.cs" />
     <Compile Include="JsonLocation.cs" />
     <Compile Include="Search.cs" />
+    <Page Include="EmailAddressInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

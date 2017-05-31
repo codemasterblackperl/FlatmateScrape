@@ -1,4 +1,5 @@
 ﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Util.Store;
 using System;
@@ -16,34 +17,90 @@ namespace Flatmate
         private string[] _scopes = { SheetsService.Scope.Spreadsheets };
         private string _appName;
         private string _user;
+        private string _spreadSheetUrl;
+
+        private string _spreadSheetId;
 
         private UserCredential _credential;
 
         public string AppName { get => _appName; set => _appName = value; }
+        public string User { get => _user; set => _user = value; }
+        public string SpreadSheetUrl { get => _spreadSheetUrl; set => _spreadSheetUrl = value; }
 
-        public GSheet(string user)
+        public GSheet()
         {
-            _user = user;
             var text=File.ReadAllText("AppName.txt");
             AppName=text.Split(':')[1].Trim();
+        }
 
-            using(var stream=new FileStream("client_secret.json", FileMode.Open, FileAccess.Read))
+        public string InitCredentials(string user)
+        {
+            User = user;
+            ClientSecrets secret;
+
+            using (var stream = new FileStream("client_secret.json", FileMode.Open, FileAccess.Read))
             {
-                string credPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-                credPath = Path.Combine(credPath, ".credentials/sheets.googleapis.com-dotnet-flatmate.json");
+                secret = GoogleClientSecrets.Load(stream).Secrets;
+            }
 
-                _credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
+            string credPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            credPath = Path.Combine(credPath, ".credentials/sheets.googleapis.com-dotnet-flatmate.json");
+            try
+            {
+                var task = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    secret,
                     _scopes,
                     user,
                     CancellationToken.None,
                     new FileDataStore(credPath, true)
-                    ).Result;
+                    );
+
+                bool result = task.Wait(60000 * 2);
+
+                if (!result)
+                {
+                    return "Timeout Error:\r\nAuthorization could not be completed within alloted time";
+                }
+
+                _credential = task.Result;
+
+                return "Authorization Successfull";
+            }
+            catch(Exception ex)
+            {
+                return "Authorization Error:\r\n"+ex.Message;
             }
         }
 
-        private void CreateAndSaveCredentials()
+        public string InitSpreadSheetService(string spreadSheetUrl)
         {
+            try
+            {
+                var service = new SheetsService(new BaseClientService.Initializer()
+                {
+                    HttpClientInitializer = _credential,
+                    ApplicationName = AppName,
+                });
+
+                SpreadSheetUrl = spreadSheetUrl;
+
+                GetSpreadSheetId();
+
+                return "SheetsService Initalized";
+            }
+            catch(Exception ex)
+            {
+                return "SheetsService Error:\r\n" + ex.Message;
+            }
+        }
+
+        private void GetSpreadSheetId()
+        {
+            //https://docs.google.com/spreadsheets/d/1_gsxzdnqU3Nbh-z20lUEg3S0ht07l1XZnygE-rI6k2c/edit?ts=590d2674#gid=763988035
+
+            var tUrl = SpreadSheetUrl.Replace("https://docs.google.com/spreadsheets/d/", "");
+            var data = tUrl.Split('/');
+            _spreadSheetId = data[0];
 
         }
     }

@@ -25,6 +25,8 @@ namespace Flatmate
         public MainWindow()
         {
             InitializeComponent();
+
+            
         }
 
         private FastCollection<ExcelDisplay> _fcSuburbs;
@@ -33,7 +35,10 @@ namespace Flatmate
         private bool _isProcessing;
         private string _excelFile;
 
-        
+        private GSheet _gsheet;
+
+
+
         async private void BtnLoadExcel_Click(object sender, RoutedEventArgs e)
         {
             //var dlg = new Microsoft.Win32.OpenFileDialog();
@@ -45,6 +50,19 @@ namespace Flatmate
             //_excelFile = dlg.FileName;
             //_fcSuburbs.Clear();
             //await LoadExcelSheet();
+            
+
+            var input = new EmailAddressInput();
+            var inputRes = input.ShowDialog();
+            if (inputRes != true)
+                return;
+
+            _gsheet = new GSheet();
+
+            var res = _gsheet.InitCredentials(input.EmailAddress);
+
+            UpdateLog(res);
+            
         }
 
          async private void BtnStartWork_Click(object sender, RoutedEventArgs e)
