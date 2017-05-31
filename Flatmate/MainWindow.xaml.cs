@@ -47,7 +47,7 @@ namespace Flatmate
             await LoadExcelSheet();
         }
 
-        async private void BtnStartWork_Click(object sender, RoutedEventArgs e)
+         async private void BtnStartWork_Click(object sender, RoutedEventArgs e)
         {
             if (_fcSuburbs.Count == 0)
             {
@@ -60,7 +60,7 @@ namespace Flatmate
             await StartProcess();
 
             UpdateUi(false);
-            
+
         }
 
         private void BtnStopWork_Click(object sender, RoutedEventArgs e)
@@ -189,12 +189,20 @@ namespace Flatmate
         {
             Search search = new Search();
             //UpdateLog("Search started");
+            int subCount = 0;
+            
             foreach(var sub in _fcSuburbs)
             {
                 
                 UpdateLog("Searching " + sub.SubUrb);
                 try
                 {
+                    if (subCount == 0)
+                    {
+                        await search.InitFlatmateSearch();
+                        await Task.Delay(5000);
+                    }
+
                     UpdateLog("Getting webpage");
                     var html =await search.SearchFlat(sub.SubUrb, sub.State);
                     UpdateLog("Webpage successfully received");
@@ -207,16 +215,21 @@ namespace Flatmate
                 {
                     UpdateLog("Error: " + ex.Message);
                 }
-                UpdateLog("Search complete");
+                
 
                 if (_isProcessing == false)
                     break;
 
-                await Task.Delay(5000);
+                await Task.Delay(45000);
+
+                subCount++;
+                if (subCount == 10)
+                    subCount = 0;
             }
             //await search.DownloadWebPage("");
             //var html = File.ReadAllText(@"c:\temp\f.htm");
             //var token = search.GetToken(html);
+            UpdateLog("Search complete");
         }
 
 

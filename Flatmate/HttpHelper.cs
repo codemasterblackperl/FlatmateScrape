@@ -8,22 +8,41 @@ using System.Threading.Tasks;
 
 namespace Flatmate
 {
+    public class HttpHeader
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
     class HttpHelper
     {
-        HttpClient _client;
-        CookieContainer _cookieContainer;
+        private HttpClient _client;
+        private CookieContainer _cookieContainer;
 
         public string ResponseUri { get; set; }
 
-        public void InitHttpClient(bool allowRedirection, string userAgent, string host, string referer = "", WebProxy proxy = null)
+        public bool AllowRedirection { get; set; }
+        public string UserAgent { get; set; }
+        public string Host { get; set; }
+        public string Referer { get; set; }
+        public string Accept { get; set; }
+
+        public CookieContainer CookieContainer { get => _cookieContainer; set => _cookieContainer = value; }
+
+        public readonly static string _acceptCommon = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+        public readonly static string _acceptJson = "application/json";
+
+
+
+        public void InitHttpClient(List<HttpHeader> customHeaders=null, WebProxy proxy = null)
         {
-            _cookieContainer = new CookieContainer();
+            if(CookieContainer==null)
+                CookieContainer = new CookieContainer();
 
             var handler = new HttpClientHandler
             {
-                AllowAutoRedirect = allowRedirection,
+                AllowAutoRedirect = AllowRedirection,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                CookieContainer = _cookieContainer,
+                CookieContainer = CookieContainer,
                 UseCookies = true
             };
 
@@ -38,18 +57,23 @@ namespace Flatmate
             _client = new HttpClient(handler);
 
 
-            _client.DefaultRequestHeaders.Add("user-agent", userAgent);
-
-            _client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-            _client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.5");
-            _client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate");
+            _client.DefaultRequestHeaders.Add("user-agent", UserAgent);
+            _client.DefaultRequestHeaders.Add("Accept", Accept);
+            _client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.8");
+            _client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
 
             _client.DefaultRequestHeaders.Add("Connection", "keep-alive");
 
-            _client.DefaultRequestHeaders.Add("Host", host);
+            _client.DefaultRequestHeaders.Add("Host", Host);
 
-            if (referer != string.Empty)
-                _client.DefaultRequestHeaders.Add("Referer", referer);
+            if (Referer != string.Empty)
+                _client.DefaultRequestHeaders.Add("Referer", Referer);
+
+            if (customHeaders != null)
+            {
+                foreach (var header in customHeaders)
+                    _client.DefaultRequestHeaders.Add(header.Name, header.Value);
+            }
         }
 
 
@@ -61,7 +85,7 @@ namespace Flatmate
             return await response.Content.ReadAsStringAsync();
         }
 
-        async public Task<string> PostAsync(string url, FormUrlEncodedContent content)
+        async public Task<string> PostAsync(string url, HttpContent content)
         {
             var resp = await _client.PostAsync(url, content);
             resp.EnsureSuccessStatusCode();
