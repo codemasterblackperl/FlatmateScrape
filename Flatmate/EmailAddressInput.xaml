@@ -5,14 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Flatmate"
         mc:Ignorable="d"
-        Title="Google Spreadsheet details" Height="215.753" Width="352.055" ResizeMode="NoResize" Topmost="True" WindowStartupLocation="CenterScreen">
+        Title="Google Spreadsheet details" Height="215.753" Width="352.055" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" ShowInTaskbar="False">
     <Grid>
         <Label Content="Enter your email address to access spreadsheet:" Margin="10,10,10,0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="28"/>
         <TextBox x:Name="TxtEmailAddress" Height="28" Margin="10,43,10,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" TextChanged="TxtEmailAddress_TextChanged"/>
         <Button x:Name="BtnSave" Content="Save" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="75" Height="25" Click="BtnSave_Click"/>
         <Button x:Name="BtnCancel" Content="Cancel" HorizontalAlignment="Right" Margin="0,0,90,10" VerticalAlignment="Bottom" Width="75" Height="25" Click="BtnCancel_Click"/>
         <Label Content="Google spreadsheet url:" Margin="10,76,10,0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="28"/>
-        <TextBox x:Name="TxtSpreadsheetUrl" Height="28" Margin="10,109,10,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalContentAlignment="Stretch"/>
+        <TextBox x:Name="TxtSpreadsheetUrl" Height="28" Margin="10,109,10,0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" TextChanged="TxtSpreadsheetUrl_TextChanged"/>
 
     </Grid>
 </Window>

@@ -50,9 +50,12 @@ namespace Flatmate
             //_excelFile = dlg.FileName;
             //_fcSuburbs.Clear();
             //await LoadExcelSheet();
-            
 
-            var input = new EmailAddressInput();
+
+            var input = new EmailAddressInput()
+            {
+                Owner = this
+            };
             var inputRes = input.ShowDialog();
             if (inputRes != true)
                 return;
@@ -61,8 +64,26 @@ namespace Flatmate
 
             var res = _gsheet.InitCredentials(input.EmailAddress);
 
-            UpdateLog(res);
-            
+            UpdateLog(res.Message);
+
+            if (!res.Success)
+                return;
+
+            res=_gsheet.InitSpreadSheetService(input.SpreadSheetUrl);
+
+            UpdateLog(res.Message);
+
+            if (!res.Success)
+                return;
+
+            res = _gsheet.InitSheets();
+
+            UpdateLog(res.Message);
+
+            if (!res.Success)
+                return;
+
+
         }
 
          async private void BtnStartWork_Click(object sender, RoutedEventArgs e)

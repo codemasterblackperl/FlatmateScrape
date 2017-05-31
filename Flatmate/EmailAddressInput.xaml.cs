@@ -33,9 +33,19 @@ namespace Flatmate
 
             if (File.Exists(_userFile))
             {
-                var data = File.ReadAllLines(_userFile);
-                TxtEmailAddress.Text = data[0];
-                TxtSpreadsheetUrl.Text = data[1];
+                try
+                {
+                    var data = File.ReadAllLines(_userFile);
+                    TxtEmailAddress.Text = data[0];
+                    TxtSpreadsheetUrl.Text = data[1];
+
+                    BtnSave.Content = "Ok";
+                }
+                catch
+                {
+                    File.Delete(_userFile);
+                    BtnSave.Content = "Save";
+                }
             }
         }
 
@@ -56,8 +66,9 @@ namespace Flatmate
             }
 
             EmailAddress = email;
+            SpreadSheetUrl = sheet;
 
-            File.WriteAllText(_userFile, EmailAddress);
+            File.WriteAllText(_userFile, EmailAddress+"\r\n"+SpreadSheetUrl);
 
             DialogResult = true;
         }
@@ -69,7 +80,12 @@ namespace Flatmate
 
         private void TxtEmailAddress_TextChanged(object sender, TextChangedEventArgs e)
         {
+            BtnSave.Content = "Save";
+        }
 
+        private void TxtSpreadsheetUrl_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            BtnSave.Content = "Save";
         }
     }
 }

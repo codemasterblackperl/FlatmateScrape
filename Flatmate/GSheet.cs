@@ -1,6 +1,7 @@
 ﻿using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
+using Google.Apis.Sheets.v4.Data;
 using Google.Apis.Util.Store;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,12 @@ using System.Threading.Tasks;
 
 namespace Flatmate
 {
+    public class GSheetResult
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
+    }
+
     class GSheet
     {
         private string[] _scopes = { SheetsService.Scope.Spreadsheets };
@@ -20,6 +27,12 @@ namespace Flatmate
         private string _spreadSheetUrl;
 
         private string _spreadSheetId;
+
+        private string _doneId;
+        private string _subUrbId;
+        private string _flatId;
+
+        private SheetsService _service;
 
         private UserCredential _credential;
 
@@ -33,8 +46,12 @@ namespace Flatmate
             AppName=text.Split(':')[1].Trim();
         }
 
-        public string InitCredentials(string user)
+        public GSheetResult InitCredentials(string user)
         {
+            var gresult = new GSheetResult()
+            {
+                Success = false
+            };
             User = user;
             ClientSecrets secret;
 
@@ -59,24 +76,33 @@ namespace Flatmate
 
                 if (!result)
                 {
-                    return "Timeout Error:\r\nAuthorization could not be completed within alloted time";
+                    gresult.Message= "Timeout Error:\r\nAuthorization could not be completed within alloted time";
+                    return gresult;
                 }
 
                 _credential = task.Result;
 
-                return "Authorization Successfull";
+                gresult.Success = true;
+                gresult.Message= "Authorization Successfull";
+                return gresult;
             }
             catch(Exception ex)
             {
-                return "Authorization Error:\r\n"+ex.Message;
+                gresult.Message = "Authorization Error:\r\n" + ex.Message;
+                return gresult;
             }
         }
 
-        public string InitSpreadSheetService(string spreadSheetUrl)
+        public GSheetResult InitSpreadSheetService(string spreadSheetUrl)
         {
+            var gresult = new GSheetResult()
+            {
+                Success = false
+            };
+
             try
             {
-                var service = new SheetsService(new BaseClientService.Initializer()
+                _service = new SheetsService(new BaseClientService.Initializer()
                 {
                     HttpClientInitializer = _credential,
                     ApplicationName = AppName,
@@ -86,11 +112,67 @@ namespace Flatmate
 
                 GetSpreadSheetId();
 
-                return "SheetsService Initalized";
+                gresult.Success = true;
+                gresult.Message= "SheetsService Initalized";
+                return gresult;
             }
             catch(Exception ex)
             {
-                return "SheetsService Error:\r\n" + ex.Message;
+                gresult.Message= "SheetsService Error:\r\n" + ex.Message;
+                return gresult;
+            }
+        }
+
+        public GSheetResult InitSheets()
+        {
+            var gresult = new GSheetResult()
+            {
+                Success = false
+            };
+
+            try
+            {
+                var request = _service.Spreadsheets.Get(_spreadSheetId);
+
+                Spreadsheet resp = request.Execute();
+
+                string doneId = null,flatId=null, subUrbId=null;
+
+                foreach(var sheet in resp.Sheets)
+                {
+                    if (sheet.Properties.Title == "Done")
+                    {
+                        doneId = sheet.Properties.SheetId.ToString();
+                    }
+                    else if (sheet.Properties.Title == "Flat")
+                    {
+                        flatId = sheet.Properties.SheetId.ToString();
+                    }
+                    else if(sheet.Properties.Title== "SuburbList")
+                    {
+                        subUrbId = sheet.Properties.SheetId.ToString();
+                    }
+                }
+
+                if (string.IsNullOrEmpty(doneId))
+                    throw new Exception("Done sheet is missing from spreadsheet");
+
+                if (string.IsNullOrEmpty(flatId))
+                    throw new Exception("Flat sheet is missing from spreadsheet");
+
+                if (string.IsNullOrEmpty(subUrbId))
+                    throw new Exception("SuburbList is missing from spreadsheet");
+
+                gresult.Success = true;
+                gresult.Message= "Downloaded the spreadsheet properties";
+                return gresult;
+
+                
+            }
+            catch(Exception ex)
+            {
+                gresult.Message = ex.Message;
+                return gresult;
             }
         }
 
