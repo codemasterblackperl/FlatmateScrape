@@ -13,11 +13,6 @@ using System.Threading.Tasks;
 
 namespace Flatmate
 {
-    public class GSheetResult
-    {
-        public bool Success { get; set; }
-        public string Message { get; set; }
-    }
 
     class GSheet
     {
@@ -36,9 +31,15 @@ namespace Flatmate
 
         private UserCredential _credential;
 
+        private bool _querryStatus;
+        private string _log;
+
         public string AppName { get => _appName; set => _appName = value; }
         public string User { get => _user; set => _user = value; }
         public string SpreadSheetUrl { get => _spreadSheetUrl; set => _spreadSheetUrl = value; }
+
+        public bool QuerryStatus { get => _querryStatus; set => _querryStatus = value; }
+        public string Log { get => _log; set => _log = value; }
 
         public GSheet()
         {
@@ -46,12 +47,10 @@ namespace Flatmate
             AppName=text.Split(':')[1].Trim();
         }
 
-        public GSheetResult InitCredentials(string user)
+        public void InitCredentials(string user)
         {
-            var gresult = new GSheetResult()
-            {
-                Success = false
-            };
+            QuerryStatus = false;
+
             User = user;
             ClientSecrets secret;
 
@@ -76,29 +75,23 @@ namespace Flatmate
 
                 if (!result)
                 {
-                    gresult.Message= "Timeout Error:\r\nAuthorization could not be completed within alloted time";
-                    return gresult;
+                    Log= "Timeout Error:\r\nAuthorization could not be completed within alloted time";
                 }
 
                 _credential = task.Result;
 
-                gresult.Success = true;
-                gresult.Message= "Authorization Successfull";
-                return gresult;
+                QuerryStatus = true;
+                Log= "Authorization Successfull";
             }
             catch(Exception ex)
             {
-                gresult.Message = "Authorization Error:\r\n" + ex.Message;
-                return gresult;
+                Log = "Authorization Error:\r\n" + ex.Message;
             }
         }
 
-        public GSheetResult InitSpreadSheetService(string spreadSheetUrl)
+        public void InitSpreadSheetService(string spreadSheetUrl)
         {
-            var gresult = new GSheetResult()
-            {
-                Success = false
-            };
+            QuerryStatus = false;
 
             try
             {
@@ -112,24 +105,18 @@ namespace Flatmate
 
                 GetSpreadSheetId();
 
-                gresult.Success = true;
-                gresult.Message= "SheetsService Initalized";
-                return gresult;
+                QuerryStatus = true;
+                Log= "SheetsService Initalized";
             }
             catch(Exception ex)
             {
-                gresult.Message= "SheetsService Error:\r\n" + ex.Message;
-                return gresult;
+                Log= "SheetsService Error:\r\n" + ex.Message;
             }
         }
 
-        public GSheetResult InitSheets()
+        public void InitSheets()
         {
-            var gresult = new GSheetResult()
-            {
-                Success = false
-            };
-
+            QuerryStatus = false;
             try
             {
                 var request = _service.Spreadsheets.Get(_spreadSheetId);
@@ -163,17 +150,23 @@ namespace Flatmate
                 if (string.IsNullOrEmpty(subUrbId))
                     throw new Exception("SuburbList is missing from spreadsheet");
 
-                gresult.Success = true;
-                gresult.Message= "Downloaded the spreadsheet properties";
-                return gresult;
-
                 
+
+                QuerryStatus = true;
+                Log= "Downloaded the spreadsheet properties";
+                                
             }
             catch(Exception ex)
             {
-                gresult.Message = ex.Message;
-                return gresult;
+                Log = ex.Message;
             }
+        }
+
+        public void UpdateDoneFlag()
+        {
+            QuerryStatus = false;
+
+            var req=_service.
         }
 
         private void GetSpreadSheetId()

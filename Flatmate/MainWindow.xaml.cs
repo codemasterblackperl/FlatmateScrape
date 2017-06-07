@@ -62,25 +62,25 @@ namespace Flatmate
 
             _gsheet = new GSheet();
 
-            var res = _gsheet.InitCredentials(input.EmailAddress);
+            _gsheet.InitCredentials(input.EmailAddress);
 
-            UpdateLog(res.Message);
+            UpdateLog(_gsheet.Log);
 
-            if (!res.Success)
+            if (!_gsheet.QuerryStatus)
                 return;
 
-            res=_gsheet.InitSpreadSheetService(input.SpreadSheetUrl);
+            _gsheet.InitSpreadSheetService(input.SpreadSheetUrl);
 
-            UpdateLog(res.Message);
+            UpdateLog(_gsheet.Log);
 
-            if (!res.Success)
+            if (!_gsheet.QuerryStatus)
                 return;
 
-            res = _gsheet.InitSheets();
+            _gsheet.InitSheets();
 
-            UpdateLog(res.Message);
+            UpdateLog(_gsheet.Log);
 
-            if (!res.Success)
+            if (!_gsheet.QuerryStatus)
                 return;
 
 
