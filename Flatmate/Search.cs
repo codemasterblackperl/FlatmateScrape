@@ -223,7 +223,7 @@ namespace Flatmate
             foreach(var node in nodes)
             {
                 var pnode = node.SelectSingleNode("./div/a[@class='hero']/div");
-                var price = pnode.InnerText.Trim();
+                var price =GetNumberFromString(pnode.InnerText.Trim());
 
                 var nnode = node.SelectSingleNode("./div/h2");
                 var name = nnode.InnerText.Trim();
@@ -239,6 +239,11 @@ namespace Flatmate
             }
 
             return list;
+        }
+
+        private string GetNumberFromString(string data)
+        {
+            return new string(data.Where(c => char.IsDigit(c)).ToArray());
         }
     }
 }
