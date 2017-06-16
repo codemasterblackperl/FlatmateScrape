@@ -162,11 +162,46 @@ namespace Flatmate
             }
         }
 
-        public void UpdateDoneFlag()
+        public void UpdateDoneFlag(bool complete=false)
         {
             QuerryStatus = false;
 
-            var req=_service.
+            var req = _service.Spreadsheets.Values.Get(_spreadSheetId, "Done!A:E");
+            var resp = req.Execute();
+        }
+
+        public List<ExcelDisplay> GetSuburbs()
+        {
+            QuerryStatus = false;
+
+            var list = new List<ExcelDisplay>();
+            try
+            {
+                var req = _service.Spreadsheets.Values.Get(_spreadSheetId, "SuburbList!A:B");
+                var resp = req.Execute();
+                for (int i = 1; i < resp.Values.Count; i++)
+                {
+                    var excelDisplay = new ExcelDisplay
+                    {
+                        SubUrb = resp.Values[i][0].ToString(),
+                        State = resp.Values[i][1].ToString()
+                    };
+
+                    if (string.IsNullOrEmpty(excelDisplay.SubUrb))
+                        break;
+
+                    list.Add(excelDisplay);
+                }
+                QuerryStatus = true;
+
+                Log = list.Count + " suburbs are found in excel sheet";
+            }
+            catch(Exception ex)
+            {
+                Log = "Error when downloading excel sheet\r\n" + ex.Message;
+                
+            }
+            return list;
         }
 
         private void GetSpreadSheetId()

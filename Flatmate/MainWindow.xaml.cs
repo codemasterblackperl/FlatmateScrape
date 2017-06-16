@@ -83,7 +83,25 @@ namespace Flatmate
             if (!_gsheet.QuerryStatus)
                 return;
 
+            //_gsheet.UpdateDoneFlag();
+            var subUrbs=_gsheet.GetSuburbs();
 
+            UpdateLog(_gsheet.Log);
+
+            if (!_gsheet.QuerryStatus)
+                return;
+
+            _fcSuburbs.Clear();
+            _fcSuburbs.AddRange(subUrbs);
+
+            CmbSuburbs.Items.Clear();
+            CmbSuburbs.Items.Add("All");
+
+            for (int i = 0; i < _fcSuburbs.Count; i++)
+                CmbSuburbs.Items.Add(_fcSuburbs[i].SubUrb);
+
+            _fcFlats.Clear();
+            CmbSuburbs.SelectedIndex = 0;
         }
 
          async private void BtnStartWork_Click(object sender, RoutedEventArgs e)
